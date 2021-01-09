@@ -2,22 +2,27 @@ package net.jemerson.android.lists
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 private const val TAG = "ItemListFragment"
+private const val REQUEST_ITEM = 0
 
-class ItemListFragment : Fragment() {
+class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
 
     private lateinit var itemListViewModel: ItemListViewModel
     private lateinit var itemRecyclerView: RecyclerView
-    private var adapter: ItemAdapter? = null
+    private var adapter: ItemAdapter? = ItemAdapter(emptyList())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,15 +46,26 @@ class ItemListFragment : Fragment() {
         itemRecyclerView =
             view.findViewById(R.id.item_recycler_view) as RecyclerView
         itemRecyclerView.layoutManager = LinearLayoutManager(context)
-
-        updateUI()
+        itemRecyclerView.adapter = adapter
 
         return view
     }
 
-    private fun updateUI() {
-        Log.d(TAG, "------updateUI in onCreateView-----")
-        val items = itemListViewModel.items
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        itemListViewModel.itemListLiveData.observe(
+                viewLifecycleOwner,
+                Observer { items ->
+                    items?.let {
+                        Log.i(TAG, "Got items ${items.size}")
+                        updateUI(items)
+                    }
+
+        })
+    }
+
+    private fun updateUI(items: List<Item>) {
+        Log.d(TAG, "------updateUI-----")
         adapter = ItemAdapter(items)
         itemRecyclerView.adapter = adapter
     }
@@ -57,6 +73,31 @@ class ItemListFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.fragment_item_list, menu)
+    }
+
+    override fun onOptionsItemSelected(menuitem: MenuItem): Boolean {
+        return when (menuitem.itemId) {
+            R.id.add_item -> {
+                createDialog()
+                true
+            }
+            else -> return super.onOptionsItemSelected(menuitem)
+        }
+    }
+
+    private fun createDialog() {
+        val nameDialogFragment = NameDialogFragment()
+        nameDialogFragment.setTargetFragment(this, REQUEST_ITEM)
+        nameDialogFragment.show(parentFragmentManager, null)
+    }
+
+    override fun onItemTextEntered(string: Editable) {
+
+        //TODO move logic to repository
+
+        val item = Item()
+        item.title = string.toString()
+        if(item.title != "") itemListViewModel.addItem(item)
     }
 
     private inner class ItemHolder(view: View)
@@ -78,6 +119,7 @@ class ItemListFragment : Fragment() {
         override fun onClick(v: View) {
             Toast.makeText(context, "${item.title} pressed!", Toast.LENGTH_SHORT)
                 .show()
+            itemListViewModel.deleteById(item.id)
         }
     }
 

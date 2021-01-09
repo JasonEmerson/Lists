@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Room
 import net.jemerson.android.lists.database.ItemDatabase
 import java.util.*
+import java.util.concurrent.Executors
 
 private const val DATABASE_NAME = "item-database"
 
@@ -17,10 +18,29 @@ class ItemRepository private constructor(context: Context) {
     ).build()
 
     private val itemDao = database.itemDao()
+    private val executor = Executors.newSingleThreadExecutor()
 
     fun getItems(): LiveData<List<Item>> = itemDao.getItems()
 
     fun getItem(id: UUID): LiveData<Item?> = itemDao.getItem(id)
+
+    fun updateItem(item: Item) {
+        executor.execute {
+            itemDao.updateItem(item)
+        }
+    }
+
+    fun addItem(item: Item) {
+        executor.execute {
+            itemDao.addItem(item)
+        }
+    }
+
+    fun deleteById(id: UUID) {
+        executor.execute {
+            itemDao.deleteById(id)
+        }
+    }
 
     companion object {
         private var INSTANCE: ItemRepository? = null

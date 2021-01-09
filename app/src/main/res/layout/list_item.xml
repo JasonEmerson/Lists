@@ -3,12 +3,15 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:padding="4dp">
 
     <TextView
         android:id="@+id/item_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Item Title"/>
+        android:gravity="center_horizontal"
+        android:text="Item Title"
+        android:textColor="#673AB7"
+        android:textSize="24sp" />
 
 </LinearLayout>

@@ -8,4 +8,4 @@ private const val TAG = "Item"
 
 @Entity
 data class Item(@PrimaryKey val id: UUID = UUID.randomUUID(),
-                var title: String = "", )
+                var title: String = "Test Item", )

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="#000000"
+    android:backgroundTint="#000000"
+    android:orientation="horizontal">
+
+    <EditText
+        android:id="@+id/item_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/alert_dark_frame"
+        android:backgroundTint="@color/black"
+        android:foregroundTint="#000000"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:textColor="#673AB7"
+        android:textColorHint="#673AB7" />
+
+    <Button
+        android:id="@+id/add_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Add" />
+
+</LinearLayout>
