@@ -6,6 +6,8 @@ import android.text.Editable
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getSystemService
@@ -20,6 +22,7 @@ private const val REQUEST_ITEM = 0
 
 class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
 
+    private lateinit var addImageButton: ImageButton
     private lateinit var itemListViewModel: ItemListViewModel
     private lateinit var itemRecyclerView: RecyclerView
     private var adapter: ItemAdapter? = ItemAdapter(emptyList())
@@ -42,6 +45,12 @@ class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_item_list, container, false)
+
+        addImageButton = view.findViewById(R.id.add_button) as ImageButton
+
+        addImageButton.setOnClickListener {
+            createDialog()
+        }
 
         itemRecyclerView =
             view.findViewById(R.id.item_recycler_view) as RecyclerView
