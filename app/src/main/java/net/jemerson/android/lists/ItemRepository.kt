@@ -1,6 +1,7 @@
 package net.jemerson.android.lists
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.room.Room
 import net.jemerson.android.lists.database.ItemDatabase
@@ -8,6 +9,7 @@ import java.util.*
 import java.util.concurrent.Executors
 
 private const val DATABASE_NAME = "item-database"
+private const val TAG = "ItemRepository"
 
 class ItemRepository private constructor(context: Context) {
 
@@ -20,19 +22,38 @@ class ItemRepository private constructor(context: Context) {
     private val itemDao = database.itemDao()
     private val executor = Executors.newSingleThreadExecutor()
 
-    fun getItems(): LiveData<List<Item>> = itemDao.getItems()
+    fun getItemBanks(): LiveData<List<ItemBank>> {
+        Log.d(TAG, "requesting List<ItemBank> from repo: ${itemDao.getItemBanks()}")
+        return itemDao.getItemBanks()
+    }
 
-    fun getItem(id: UUID): LiveData<Item?> = itemDao.getItem(id)
+    fun getBankItems(bankItemId: UUID): LiveData<List<BankItem>> {
+        Log.d(TAG, "requesting List<BankItem> from repo: ${itemDao.getBankItems(bankItemId)}")
+        return itemDao.getBankItems(bankItemId)
+    }
 
-    fun updateItem(item: Item) {
+    fun updateItemBank(itemBank: ItemBank) {
         executor.execute {
-            itemDao.updateItem(item)
+            itemDao.updateItemBank(itemBank)
         }
     }
 
-    fun addItem(item: Item) {
+    fun updateBankItem(bankItem: BankItem) {
         executor.execute {
-            itemDao.addItem(item)
+            itemDao.updateBankItem(bankItem)
+        }
+    }
+
+    fun addItemBank(itemBank: ItemBank) {
+        executor.execute {
+            itemDao.addItemBank(itemBank)
+        }
+    }
+
+    fun addBankItem(bankItem: BankItem) {
+        executor.execute {
+            itemDao.addBankItem(bankItem)
+            Log.d(TAG, "BankItem sent to itemDao: ${bankItem.title} - ${bankItem.itemId}")
         }
     }
 

@@ -6,11 +6,12 @@
     android:padding="4dp">
 
     <TextView
-        android:id="@+id/item_title"
+        android:id="@+id/itembank_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:text="Item Title"
+        android:text="ItemBank Title"
+        android:textColor="#673AB7"
         android:textSize="24sp" />
 
 </LinearLayout>

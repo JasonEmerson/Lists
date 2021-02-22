@@ -5,23 +5,22 @@ import android.os.Bundle
 import android.text.Editable
 import android.util.Log
 import android.view.*
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.util.*
 
 private const val TAG = "ItemListFragment"
+private const val ARG_ITEMBANK_ID = "item_id"
 private const val REQUEST_ITEM = 0
 
 class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
 
+    private lateinit var itemBankId: UUID
     private lateinit var addImageButton: ImageButton
     private lateinit var itemListViewModel: ItemListViewModel
     private lateinit var itemRecyclerView: RecyclerView
@@ -29,8 +28,7 @@ class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-        Log.d(TAG, "------onCreate-----")
+        itemBankId = arguments?.getSerializable(ARG_ITEMBANK_ID) as UUID
     }
 
     override fun onAttach(context: Context) {
@@ -40,9 +38,9 @@ class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_item_list, container, false)
 
@@ -53,7 +51,7 @@ class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
         }
 
         itemRecyclerView =
-            view.findViewById(R.id.item_recycler_view) as RecyclerView
+                view.findViewById(R.id.item_recycler_view) as RecyclerView
         itemRecyclerView.layoutManager = LinearLayoutManager(context)
         itemRecyclerView.adapter = adapter
 
@@ -62,18 +60,17 @@ class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        itemListViewModel.itemListLiveData.observe(
+        itemListViewModel.getBankItemListLiveData(itemBankId).observe(
                 viewLifecycleOwner,
-                Observer { items ->
-                    items?.let {
-                        Log.i(TAG, "Got items ${items.size}")
-                        updateUI(items)
+                { bankItems ->
+                    bankItems?.let {
+                        Log.d(TAG, "FROM OBSERVER:: size:  ${bankItems.size}")
+                        updateUI(bankItems)
                     }
-
-        })
+                })
     }
 
-    private fun updateUI(items: List<Item>) {
+    private fun updateUI(items: List<BankItem>) {
         Log.d(TAG, "------updateUI-----")
         adapter = ItemAdapter(items)
         itemRecyclerView.adapter = adapter
@@ -81,7 +78,7 @@ class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.fragment_item_list, menu)
+        inflater.inflate(R.menu.fragment_itembank_list, menu)
     }
 
     override fun onOptionsItemSelected(menuitem: MenuItem): Boolean {
@@ -104,56 +101,61 @@ class ItemListFragment : Fragment(), NameDialogFragment.Callbacks {
 
         //TODO move logic to repository
 
-        val item = Item()
-        item.title = string.toString()
-        if(item.title != "") itemListViewModel.addItem(item)
+        val bankItem = BankItem()
+        bankItem.title = string.toString()
+        bankItem.ownerId = itemBankId
+        if(bankItem.title != "") itemListViewModel.addBankItem(bankItem)
+        Log.d(TAG, "created from dialogfrag: bankItem.title=${bankItem.title} UUID: ${bankItem.itemId}")
     }
 
     private inner class ItemHolder(view: View)
         : RecyclerView.ViewHolder(view), View.OnClickListener {
 
-        private lateinit var item: Item
+        private lateinit var bankItem: BankItem
 
-        private val titleTextView: TextView = itemView.findViewById(R.id.item_title)
+        private val titleTextView: TextView = itemView.findViewById(R.id.itembank_title)
 
         init {
             itemView.setOnClickListener(this)
         }
 
-        fun bind(item: Item) {
-            this.item = item
-            titleTextView.text = this.item.title
+        fun bind(bankItem: BankItem) {
+            this.bankItem = bankItem
+            titleTextView.text = this.bankItem.title
         }
 
         override fun onClick(v: View) {
-            Toast.makeText(context, "${item.title} pressed!", Toast.LENGTH_SHORT)
-                .show()
-            itemListViewModel.deleteById(item.id)
+            Toast.makeText(context, "${bankItem.title} pressed!", Toast.LENGTH_SHORT)
+                    .show()
+            //itemListViewModel.deleteById(item.itemId)
         }
     }
 
-    private inner class ItemAdapter(var items: List<Item>)
+    private inner class ItemAdapter(var bankItems: List<BankItem>)
         : RecyclerView.Adapter<ItemHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int)
                 : ItemHolder {
-            val view = layoutInflater.inflate(R.layout.list_item, parent, false)
+            val view = layoutInflater.inflate(R.layout.list_itembank, parent, false)
             return ItemHolder(view)
         }
 
-        override fun getItemCount() = items.size
+        override fun getItemCount() = bankItems.size
 
         override fun onBindViewHolder(holder: ItemHolder, position: Int) {
-            val puzzle = items[position]
-            holder.bind(puzzle)
+            val bankItem = bankItems[position]
+            holder.bind(bankItem)
         }
     }
 
     companion object {
-        fun newInstance(): ItemListFragment {
-            return ItemListFragment()
+        fun newInstance(itemBankId: UUID): ItemListFragment {
+            val args = Bundle().apply {
+                putSerializable(ARG_ITEMBANK_ID, itemBankId)
+            }
+            return ItemListFragment().apply {
+                arguments = args
+            }
         }
     }
-
-
 }

@@ -5,24 +5,32 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import net.jemerson.android.lists.Item
+import net.jemerson.android.lists.BankItem
+import net.jemerson.android.lists.ItemBank
+
 import java.util.*
 
 @Dao
 interface ItemDao {
 
-    @Query("SELECT * FROM item")
-    fun getItems(): LiveData<List<Item>>
+    @Query("SELECT * FROM itemBank")
+    fun getItemBanks(): LiveData<List<ItemBank>>
 
-    @Query("SELECT * FROM item WHERE id=(:id)")
-    fun getItem(id: UUID): LiveData<Item?>
+    @Query("SELECT * FROM bankItem WHERE ownerId=(:ownerId)")
+    fun getBankItems(ownerId: UUID): LiveData<List<BankItem>>
 
-    @Query("DELETE FROM item WHERE id=(:id)")
+    @Query("DELETE FROM itemBank WHERE id=(:id)")
     fun deleteById(id: UUID)
 
     @Update
-    fun updateItem(item: Item)
+    fun updateItemBank(itemBank: ItemBank)
+
+    @Update
+    fun updateBankItem(bankItem: BankItem)
 
     @Insert
-    fun addItem(item: Item)
+    fun addItemBank(itemBank: ItemBank)
+
+    @Insert
+    fun addBankItem(bankItem: BankItem)
 }
